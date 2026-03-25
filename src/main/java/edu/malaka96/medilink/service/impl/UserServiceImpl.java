@@ -1,10 +1,13 @@
-package edu.malaka96.medilink.service;
+package edu.malaka96.medilink.service.impl;
 
+import edu.malaka96.medilink.exception.RoleNotFoundException;
 import edu.malaka96.medilink.model.dto.UserRequestDto;
 import edu.malaka96.medilink.model.dto.UserResponseDto;
 import edu.malaka96.medilink.model.entity.RoleEntity;
 import edu.malaka96.medilink.model.entity.UserEntity;
+import edu.malaka96.medilink.repository.RoleRepository;
 import edu.malaka96.medilink.repository.UserRepository;
+import edu.malaka96.medilink.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
@@ -20,12 +24,15 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserEntity mapToEntity(UserRequestDto userRequestDto) {
+        RoleEntity role = roleRepository.findById(userRequestDto.getRoleId())
+                .orElseThrow(() -> new RoleNotFoundException("Role with id " + userRequestDto.getRoleId() + " not found"));
+        
         return UserEntity.builder()
                 .name(userRequestDto.getName())
                 .email(userRequestDto.getEmail())
                 .password(userRequestDto.getPassword())
                 .phone(userRequestDto.getPhone())
-                .roleEntity(RoleEntity.builder().id(userRequestDto.getRoleId()).build())
+                .roleEntity(role)
                 .build();
     }
 
