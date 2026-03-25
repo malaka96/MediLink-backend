@@ -1,6 +1,7 @@
 package edu.malaka96.medilink.service.impl;
 
 import edu.malaka96.medilink.exception.RoleNotFoundException;
+import edu.malaka96.medilink.exception.UserAlreadyExistsException;
 import edu.malaka96.medilink.model.dto.UserRequestDto;
 import edu.malaka96.medilink.model.dto.UserResponseDto;
 import edu.malaka96.medilink.model.entity.RoleEntity;
@@ -20,6 +21,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
+        if (userRepository.existsByEmail(userRequestDto.getEmail())) {
+            throw new UserAlreadyExistsException("User with email '" + userRequestDto.getEmail() + "' already exists");
+        }
+        
         return mapToResponseDto(userRepository.save(mapToEntity(userRequestDto)));
     }
 

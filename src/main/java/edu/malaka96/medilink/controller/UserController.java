@@ -1,6 +1,7 @@
 package edu.malaka96.medilink.controller;
 
 import edu.malaka96.medilink.exception.RoleNotFoundException;
+import edu.malaka96.medilink.exception.UserAlreadyExistsException;
 import edu.malaka96.medilink.model.dto.UserRequestDto;
 import edu.malaka96.medilink.model.dto.UserResponseDto;
 import edu.malaka96.medilink.service.UserService;
@@ -25,5 +26,10 @@ public class UserController {
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<String> handleRoleNotFound(RoleNotFoundException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<String> handleUserAlreadyExists(UserAlreadyExistsException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 }
