@@ -21,15 +21,21 @@ public class MedicineAliasServiceImpl implements MedicineAliasService {
 
     @Override
     public MedicineAliasResponseDto createAlias(MedicineAliasRequestDto medicineAliasRequestDto) {
-        if (medicineAliasRepository.existsByAliasNameAndMedicineId(medicineAliasRequestDto.getAliasName(), medicineAliasRequestDto.getMedicineId())) {
-            throw new MedicineAliasAlreadyExistsException("Alias '" + medicineAliasRequestDto.getAliasName() + "' already exists for this medicine");
+        if (medicineAliasRepository.existsByAliasNameAndMedicineId(
+                medicineAliasRequestDto.getAliasName(),
+                medicineAliasRequestDto.getMedicineId())) {
+            throw new MedicineAliasAlreadyExistsException("Alias '"
+                    + medicineAliasRequestDto.getAliasName() +
+                    "' already exists for this medicine");
         }
         return mapToResponseDto(medicineAliasRepository.save(mapToEntity(medicineAliasRequestDto)));
     }
 
     private MedicineAliasEntity mapToEntity(MedicineAliasRequestDto dto) {
         MedicineEntity medicine = medicineRepository.findById(dto.getMedicineId())
-                .orElseThrow(() -> new MedicineNotFoundException("Medicine with id " + dto.getMedicineId() + " not found"));
+                .orElseThrow(() ->
+                        new MedicineNotFoundException("Medicine with id " +
+                                dto.getMedicineId() + " not found"));
 
         return MedicineAliasEntity.builder()
                 .medicine(medicine)
