@@ -10,6 +10,7 @@ import edu.malaka96.medilink.repository.RoleRepository;
 import edu.malaka96.medilink.repository.UserRepository;
 import edu.malaka96.medilink.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,24 +19,24 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
         if (userRepository.existsByEmail(userRequestDto.getEmail())) {
             throw new UserAlreadyExistsException("User with email '" + userRequestDto.getEmail() + "' already exists");
         }
-        
         return mapToResponseDto(userRepository.save(mapToEntity(userRequestDto)));
     }
 
     private UserEntity mapToEntity(UserRequestDto userRequestDto) {
         RoleEntity role = roleRepository.findById(userRequestDto.getRoleId())
                 .orElseThrow(() -> new RoleNotFoundException("Role with id " + userRequestDto.getRoleId() + " not found"));
-        
+
         return UserEntity.builder()
                 .name(userRequestDto.getName())
                 .email(userRequestDto.getEmail())
-                .password(userRequestDto.getPassword())
+                .password(passwordEncoder.encode(userRequestDto.getPassword()))
                 .phone(userRequestDto.getPhone())
                 .roleEntity(role)
                 .build();
