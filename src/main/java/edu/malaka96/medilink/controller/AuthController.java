@@ -3,7 +3,10 @@ package edu.malaka96.medilink.controller;
 import edu.malaka96.medilink.model.dto.LoginRequestDto;
 import edu.malaka96.medilink.model.dto.LoginResponseDto;
 import edu.malaka96.medilink.service.JwtService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,14 +28,35 @@ public class AuthController {
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
 
+    @Value("${jwt.expiration}")
+    private long expiration;
+
     @PostMapping("/login/mobile")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
+    public ResponseEntity<LoginResponseDto> loginMobile(@RequestBody LoginRequestDto loginRequestDto) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword())
         );
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequestDto.getEmail());
         String token = jwtService.generateToken(userDetails);
         return ResponseEntity.ok(new LoginResponseDto(token));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Void> loginWeb(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword())
+        );
+        UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequestDto.getEmail());
+        String token = jwtService.generateToken(userDetails);
+
+        Cookie cookie = new Cookie("jwt", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge((int) (expiration / 1000));
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok().build();
     }
 
     @ExceptionHandler(BadCredentialsException.class)
