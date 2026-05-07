@@ -2,7 +2,6 @@ package edu.malaka96.medilink.controller;
 
 import edu.malaka96.medilink.model.dto.LoginRequestDto;
 import edu.malaka96.medilink.model.dto.LoginResponseDto;
-import edu.malaka96.medilink.model.dto.UserResponseDto;
 import edu.malaka96.medilink.service.JwtService;
 import edu.malaka96.medilink.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -16,7 +15,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -76,11 +74,6 @@ public class AuthController {
         SecurityContextHolder.clearContext();
 
         return ResponseEntity.ok("Logged out successfully");
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<UserResponseDto> getMe(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(userService.getUserByEmail(userDetails.getUsername()));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
