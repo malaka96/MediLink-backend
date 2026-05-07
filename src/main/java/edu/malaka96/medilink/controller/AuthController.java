@@ -2,7 +2,9 @@ package edu.malaka96.medilink.controller;
 
 import edu.malaka96.medilink.model.dto.LoginRequestDto;
 import edu.malaka96.medilink.model.dto.LoginResponseDto;
+import edu.malaka96.medilink.model.dto.UserResponseDto;
 import edu.malaka96.medilink.service.JwtService;
+import edu.malaka96.medilink.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,6 +30,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
+    private final UserService userService;
 
     @Value("${jwt.expiration}")
     private long expiration;
@@ -38,11 +42,11 @@ public class AuthController {
         );
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequestDto.getEmail());
         String token = jwtService.generateToken(userDetails);
-        return ResponseEntity.ok(new LoginResponseDto(token));
+        return ResponseEntity.ok(new LoginResponseDto(token, userService.getUserByEmail(loginRequestDto.getEmail())));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> loginWeb(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
+    public ResponseEntity<LoginResponseDto> loginWeb(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword())
         );
@@ -56,7 +60,12 @@ public class AuthController {
         cookie.setMaxAge((int) (expiration / 1000));
         response.addCookie(cookie);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new LoginResponseDto(token, userService.getUserByEmail(loginRequestDto.getEmail())));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> getMe(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(userService.getUserByEmail(userDetails.getUsername()));
     }
 
     @ExceptionHandler(BadCredentialsException.class)

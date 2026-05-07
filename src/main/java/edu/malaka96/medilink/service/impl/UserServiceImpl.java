@@ -2,6 +2,7 @@ package edu.malaka96.medilink.service.impl;
 
 import edu.malaka96.medilink.exception.RoleNotFoundException;
 import edu.malaka96.medilink.exception.UserAlreadyExistsException;
+import edu.malaka96.medilink.exception.UserNotFoundException;
 import edu.malaka96.medilink.model.dto.UserRequestDto;
 import edu.malaka96.medilink.model.dto.UserResponseDto;
 import edu.malaka96.medilink.model.entity.RoleEntity;
@@ -29,6 +30,13 @@ public class UserServiceImpl implements UserService {
         return mapToResponseDto(userRepository.save(mapToEntity(userRequestDto)));
     }
 
+    @Override
+    public UserResponseDto getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(this::mapToResponseDto)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+    }
+
     private UserEntity mapToEntity(UserRequestDto userRequestDto) {
         RoleEntity role = roleRepository.findById(userRequestDto.getRoleId())
                 .orElseThrow(() -> new RoleNotFoundException("Role with id " + userRequestDto.getRoleId() + " not found"));
@@ -48,6 +56,7 @@ public class UserServiceImpl implements UserService {
         responseDto.setName(userEntity.getName());
         responseDto.setEmail(userEntity.getEmail());
         responseDto.setPhone(userEntity.getPhone());
+        responseDto.setRole(userEntity.getRoleEntity() != null ? userEntity.getRoleEntity().getName() : null);
         responseDto.setStatus(userEntity.getStatus());
         responseDto.setCreatedAt(userEntity.getCreatedAt());
         return responseDto;

@@ -5,4 +5,5 @@ import edu.malaka96.medilink.model.dto.UserResponseDto;
 
 public interface UserService {
     UserResponseDto createUser(UserRequestDto userRequestDto);
+    UserResponseDto getUserByEmail(String email);
 }
