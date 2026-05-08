@@ -3,6 +3,7 @@ package edu.malaka96.medilink.service.impl;
 import edu.malaka96.medilink.exception.RoleNotFoundException;
 import edu.malaka96.medilink.exception.UserAlreadyExistsException;
 import edu.malaka96.medilink.exception.UserNotFoundException;
+import edu.malaka96.medilink.model.dto.AdminUserRequestDto;
 import edu.malaka96.medilink.model.dto.UserRequestDto;
 import edu.malaka96.medilink.model.dto.UserResponseDto;
 import edu.malaka96.medilink.model.entity.RoleEntity;
@@ -13,6 +14,7 @@ import edu.malaka96.medilink.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -29,7 +31,32 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(userRequestDto.getEmail())) {
             throw new UserAlreadyExistsException("User with email '" + userRequestDto.getEmail() + "' already exists");
         }
-        return mapToResponseDto(userRepository.save(mapToEntity(userRequestDto)));
+        RoleEntity role = roleRepository.findByName("PHARMACY")
+                .orElseThrow(() -> new RoleNotFoundException("Role PHARMACY not found"));
+        return mapToResponseDto(userRepository.save(UserEntity.builder()
+                .name(userRequestDto.getName())
+                .email(userRequestDto.getEmail())
+                .password(passwordEncoder.encode(userRequestDto.getPassword()))
+                .phone(userRequestDto.getPhone())
+                .roleEntity(role)
+                .build()));
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDto createUserByAdmin(AdminUserRequestDto dto) {
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new UserAlreadyExistsException("User with email '" + dto.getEmail() + "' already exists");
+        }
+        RoleEntity role = roleRepository.findByName(dto.getRoleName())
+                .orElseThrow(() -> new RoleNotFoundException("Role '" + dto.getRoleName() + "' not found"));
+        return mapToResponseDto(userRepository.save(UserEntity.builder()
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .phone(dto.getPhone())
+                .roleEntity(role)
+                .build()));
     }
 
     @Override
@@ -37,19 +64,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email)
                 .map(this::mapToResponseDto)
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
-    }
-
-    private UserEntity mapToEntity(UserRequestDto userRequestDto) {
-        RoleEntity role = roleRepository.findById(userRequestDto.getRoleId())
-                .orElseThrow(() -> new RoleNotFoundException("Role with id " + userRequestDto.getRoleId() + " not found"));
-
-        return UserEntity.builder()
-                .name(userRequestDto.getName())
-                .email(userRequestDto.getEmail())
-                .password(passwordEncoder.encode(userRequestDto.getPassword()))
-                .phone(userRequestDto.getPhone())
-                .roleEntity(role)
-                .build();
     }
 
     private UserResponseDto mapToResponseDto(UserEntity userEntity) {

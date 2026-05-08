@@ -31,7 +31,7 @@ public class DataInitializer implements ApplicationRunner {
                 RoleRequestDto dto = new RoleRequestDto();
                 dto.setName(name);
                 roleService.createRole(dto);
-            } catch (RoleAlreadyExistsException ignored) {}
+            } catch (RoleAlreadyExistsException _) {}
         });
 
         if (!userRepository.existsByEmail("m@gmail.com")) {

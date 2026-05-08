@@ -3,6 +3,7 @@ package edu.malaka96.medilink.controller;
 import edu.malaka96.medilink.exception.RoleNotFoundException;
 import edu.malaka96.medilink.exception.UserAlreadyExistsException;
 import edu.malaka96.medilink.exception.UserNotFoundException;
+import edu.malaka96.medilink.model.dto.AdminUserRequestDto;
 import edu.malaka96.medilink.model.dto.UserRequestDto;
 import edu.malaka96.medilink.model.dto.UserResponseDto;
 import edu.malaka96.medilink.service.UserService;
@@ -22,8 +23,12 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserResponseDto> createUser(@RequestBody UserRequestDto userRequestDto) {
-        UserResponseDto createdUser = userService.createUser(userRequestDto);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+        return new ResponseEntity<>(userService.createUser(userRequestDto), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/admin")
+    public ResponseEntity<UserResponseDto> createUserByAdmin(@RequestBody AdminUserRequestDto adminUserRequestDto) {
+        return new ResponseEntity<>(userService.createUserByAdmin(adminUserRequestDto), HttpStatus.CREATED);
     }
 
     @GetMapping("/me")
