@@ -8,6 +8,8 @@ import edu.malaka96.medilink.service.PharmacyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,8 +20,9 @@ public class PharmacyController {
     private final PharmacyService pharmacyService;
 
     @PostMapping
-    public ResponseEntity<PharmacyResponseDto> createPharmacy(@RequestBody PharmacyRequestDto pharmacyRequestDto) {
-        PharmacyResponseDto createdPharmacy = pharmacyService.createPharmacy(pharmacyRequestDto);
+    public ResponseEntity<PharmacyResponseDto> createPharmacy(@RequestBody PharmacyRequestDto pharmacyRequestDto,
+                                                              @AuthenticationPrincipal UserDetails userDetails) {
+        PharmacyResponseDto createdPharmacy = pharmacyService.createPharmacy(pharmacyRequestDto.getName(), userDetails.getUsername());
         return new ResponseEntity<>(createdPharmacy, HttpStatus.CREATED);
     }
 

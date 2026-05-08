@@ -20,19 +20,19 @@ public class PharmacyServiceImpl implements PharmacyService {
     private final UserRepository userRepository;
 
     @Override
-    public PharmacyResponseDto createPharmacy(PharmacyRequestDto pharmacyRequestDto) {
-        if (pharmacyRepository.existsByName(pharmacyRequestDto.getName())) {
-            throw new PharmacyAlreadyExistsException("Pharmacy with name '" + pharmacyRequestDto.getName() + "' already exists");
+    public PharmacyResponseDto createPharmacy(String name, String email) {
+        if (pharmacyRepository.existsByName(name)) {
+            throw new PharmacyAlreadyExistsException("Pharmacy with name '" + name + "' already exists");
         }
-        return mapToResponseDto(pharmacyRepository.save(mapToEntity(pharmacyRequestDto)));
+        return mapToResponseDto(pharmacyRepository.save(mapToEntity(name, email)));
     }
 
-    private PharmacyEntity mapToEntity(PharmacyRequestDto pharmacyRequestDto) {
-        UserEntity owner = userRepository.findByEmail(pharmacyRequestDto.getOwnerEmail())
-                .orElseThrow(() -> new UserNotFoundException("User with email '" + pharmacyRequestDto.getOwnerEmail() + "' not found"));
+    private PharmacyEntity mapToEntity(String name, String email) {
+        UserEntity owner = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User with email '" + email + "' not found"));
 
         return PharmacyEntity.builder()
-                .name(pharmacyRequestDto.getName())
+                .name(name)
                 .owner(owner)
                 .build();
     }
