@@ -5,4 +5,5 @@ import edu.malaka96.medilink.model.dto.RoleResponseDto;
 
 public interface RoleService {
     RoleResponseDto createRole(RoleRequestDto roleRequestDto);
+    RoleResponseDto getRoleByName(String name);
 }

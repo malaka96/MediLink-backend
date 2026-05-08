@@ -1,6 +1,7 @@
 package edu.malaka96.medilink.service.impl;
 
 import edu.malaka96.medilink.exception.RoleAlreadyExistsException;
+import edu.malaka96.medilink.exception.RoleNotFoundException;
 import edu.malaka96.medilink.model.dto.RoleRequestDto;
 import edu.malaka96.medilink.model.dto.RoleResponseDto;
 import edu.malaka96.medilink.model.entity.RoleEntity;
@@ -24,6 +25,13 @@ public class RoleServiceImpl implements RoleService {
         RoleEntity roleEntity = mapToEntity(roleRequestDto);
         RoleEntity savedRole = roleRepository.save(roleEntity);
         return mapToResponseDto(savedRole);
+    }
+
+    @Override
+    public RoleResponseDto getRoleByName(String name) {
+        return roleRepository.findByName(name)
+                .map(this::mapToResponseDto)
+                .orElseThrow(() -> new RoleNotFoundException("Role '" + name + "' not found"));
     }
 
     private RoleEntity mapToEntity(RoleRequestDto roleRequestDto) {

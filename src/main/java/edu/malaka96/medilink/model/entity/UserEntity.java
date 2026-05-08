@@ -29,7 +29,7 @@ public class UserEntity {
 
     private String phone;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "role_id")
     private RoleEntity roleEntity;
 
