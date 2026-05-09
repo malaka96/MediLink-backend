@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PharmacyRepository extends JpaRepository<PharmacyEntity, Long> {
     boolean existsByName(String name);
+    java.util.Optional<PharmacyEntity> findByOwnerEmail(String email);
 }

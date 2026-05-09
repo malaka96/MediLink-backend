@@ -1,6 +1,7 @@
 package edu.malaka96.medilink.controller;
 
 import edu.malaka96.medilink.exception.PharmacyAlreadyExistsException;
+import edu.malaka96.medilink.exception.PharmacyNotFoundForUserException;
 import edu.malaka96.medilink.exception.UserNotFoundException;
 import edu.malaka96.medilink.model.dto.PharmacyRequestDto;
 import edu.malaka96.medilink.model.dto.PharmacyResponseDto;
@@ -26,9 +27,19 @@ public class PharmacyController {
         return new ResponseEntity<>(createdPharmacy, HttpStatus.CREATED);
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<PharmacyResponseDto> getMyPharmacy(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(pharmacyService.getMyPharmacy(userDetails.getUsername()));
+    }
+
     @ExceptionHandler(PharmacyAlreadyExistsException.class)
     public ResponseEntity<String> handlePharmacyAlreadyExists(PharmacyAlreadyExistsException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(PharmacyNotFoundForUserException.class)
+    public ResponseEntity<String> handlePharmacyNotFoundForUser(PharmacyNotFoundForUserException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(UserNotFoundException.class)

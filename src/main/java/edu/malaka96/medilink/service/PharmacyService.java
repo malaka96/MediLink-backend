@@ -5,4 +5,5 @@ import edu.malaka96.medilink.model.dto.PharmacyResponseDto;
 
 public interface PharmacyService {
     PharmacyResponseDto createPharmacy(String name, String email);
+    PharmacyResponseDto getMyPharmacy(String email);
 }
