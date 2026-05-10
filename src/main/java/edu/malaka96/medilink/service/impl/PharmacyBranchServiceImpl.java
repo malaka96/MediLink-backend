@@ -2,6 +2,7 @@ package edu.malaka96.medilink.service.impl;
 
 import edu.malaka96.medilink.exception.PharmacyBranchAlreadyExistsException;
 import edu.malaka96.medilink.exception.PharmacyNotFoundException;
+import edu.malaka96.medilink.exception.UnauthorizedPharmacyAccessException;
 import edu.malaka96.medilink.model.dto.PharmacyBranchRequestDto;
 import edu.malaka96.medilink.model.dto.PharmacyBranchResponseDto;
 import edu.malaka96.medilink.model.entity.PharmacyBranch;
@@ -22,13 +23,19 @@ public class PharmacyBranchServiceImpl implements PharmacyBranchService {
     private final PharmacyRepository pharmacyRepository;
 
     @Override
-    public PharmacyBranchResponseDto createBranch(PharmacyBranchRequestDto pharmacyBranchRequestDto) {
-        if (pharmacyBranchRepository.existsByNameAndPharmacyEntityId(pharmacyBranchRequestDto.getName(),
-                pharmacyBranchRequestDto.getPharmacyId())) {
+    public PharmacyBranchResponseDto createBranch(PharmacyBranchRequestDto pharmacyBranchRequestDto, String email) {
+        PharmacyEntity pharmacy = pharmacyRepository.findByOwnerEmail(email)
+                .orElseThrow(() -> new PharmacyNotFoundException("No pharmacy found for user: " + email));
+
+        if (!pharmacy.getId().equals(pharmacyBranchRequestDto.getPharmacyId())) {
+            throw new UnauthorizedPharmacyAccessException("Pharmacy does not belong to the authenticated user");
+        }
+
+        if (pharmacyBranchRepository.existsByNameAndPharmacyEntityId(pharmacyBranchRequestDto.getName(), pharmacy.getId())) {
             throw new PharmacyBranchAlreadyExistsException("Branch with name '"
                     + pharmacyBranchRequestDto.getName() + "' already exists in this pharmacy");
         }
-        return mapToResponseDto(pharmacyBranchRepository.save(mapToEntity(pharmacyBranchRequestDto)));
+        return mapToResponseDto(pharmacyBranchRepository.save(mapToEntity(pharmacyBranchRequestDto, pharmacy)));
     }
 
     @Override
@@ -39,10 +46,7 @@ public class PharmacyBranchServiceImpl implements PharmacyBranchService {
                 .stream().map(this::mapToResponseDto).toList();
     }
 
-    private PharmacyBranch mapToEntity(PharmacyBranchRequestDto dto) {
-        PharmacyEntity pharmacy = pharmacyRepository.findById(dto.getPharmacyId())
-                .orElseThrow(() -> new PharmacyNotFoundException("Pharmacy with id " + dto.getPharmacyId() + " not found"));
-
+    private PharmacyBranch mapToEntity(PharmacyBranchRequestDto dto, PharmacyEntity pharmacy) {
         return PharmacyBranch.builder()
                 .pharmacyEntity(pharmacy)
                 .name(dto.getName())

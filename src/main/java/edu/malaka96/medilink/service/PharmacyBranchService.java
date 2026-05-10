@@ -6,6 +6,6 @@ import edu.malaka96.medilink.model.dto.PharmacyBranchResponseDto;
 import java.util.List;
 
 public interface PharmacyBranchService {
-    PharmacyBranchResponseDto createBranch(PharmacyBranchRequestDto pharmacyBranchRequestDto);
+    PharmacyBranchResponseDto createBranch(PharmacyBranchRequestDto pharmacyBranchRequestDto, String email);
     List<PharmacyBranchResponseDto> getBranchesByOwnerEmail(String email);
 }

@@ -2,6 +2,7 @@ package edu.malaka96.medilink.controller;
 
 import edu.malaka96.medilink.exception.PharmacyBranchAlreadyExistsException;
 import edu.malaka96.medilink.exception.PharmacyNotFoundException;
+import edu.malaka96.medilink.exception.UnauthorizedPharmacyAccessException;
 import edu.malaka96.medilink.model.dto.PharmacyBranchRequestDto;
 import edu.malaka96.medilink.model.dto.PharmacyBranchResponseDto;
 import edu.malaka96.medilink.service.PharmacyBranchService;
@@ -22,14 +23,19 @@ public class PharmacyBranchController {
     private final PharmacyBranchService pharmacyBranchService;
 
     @PostMapping
-    public ResponseEntity<PharmacyBranchResponseDto> createBranch(@RequestBody PharmacyBranchRequestDto pharmacyBranchRequestDto) {
-        PharmacyBranchResponseDto createdBranch = pharmacyBranchService.createBranch(pharmacyBranchRequestDto);
-        return new ResponseEntity<>(createdBranch, HttpStatus.CREATED);
+    public ResponseEntity<PharmacyBranchResponseDto> createBranch(@RequestBody PharmacyBranchRequestDto pharmacyBranchRequestDto,
+                                                                   @AuthenticationPrincipal UserDetails userDetails) {
+        return new ResponseEntity<>(pharmacyBranchService.createBranch(pharmacyBranchRequestDto, userDetails.getUsername()), HttpStatus.CREATED);
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<PharmacyBranchResponseDto>> getMyBranches(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(pharmacyBranchService.getBranchesByOwnerEmail(userDetails.getUsername()));
+    }
+
+    @ExceptionHandler(UnauthorizedPharmacyAccessException.class)
+    public ResponseEntity<String> handleUnauthorizedAccess(UnauthorizedPharmacyAccessException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(PharmacyBranchAlreadyExistsException.class)
