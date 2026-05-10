@@ -8,7 +8,11 @@ import edu.malaka96.medilink.service.PharmacyBranchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/pharmacy-branches")
@@ -21,6 +25,11 @@ public class PharmacyBranchController {
     public ResponseEntity<PharmacyBranchResponseDto> createBranch(@RequestBody PharmacyBranchRequestDto pharmacyBranchRequestDto) {
         PharmacyBranchResponseDto createdBranch = pharmacyBranchService.createBranch(pharmacyBranchRequestDto);
         return new ResponseEntity<>(createdBranch, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<PharmacyBranchResponseDto>> getMyBranches(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(pharmacyBranchService.getBranchesByOwnerEmail(userDetails.getUsername()));
     }
 
     @ExceptionHandler(PharmacyBranchAlreadyExistsException.class)

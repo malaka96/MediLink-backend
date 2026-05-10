@@ -12,6 +12,8 @@ import edu.malaka96.medilink.service.PharmacyBranchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class PharmacyBranchServiceImpl implements PharmacyBranchService {
@@ -27,6 +29,14 @@ public class PharmacyBranchServiceImpl implements PharmacyBranchService {
                     + pharmacyBranchRequestDto.getName() + "' already exists in this pharmacy");
         }
         return mapToResponseDto(pharmacyBranchRepository.save(mapToEntity(pharmacyBranchRequestDto)));
+    }
+
+    @Override
+    public List<PharmacyBranchResponseDto> getBranchesByOwnerEmail(String email) {
+        PharmacyEntity pharmacy = pharmacyRepository.findByOwnerEmail(email)
+                .orElseThrow(() -> new PharmacyNotFoundException("No pharmacy found for user: " + email));
+        return pharmacyBranchRepository.findByPharmacyEntityId(pharmacy.getId())
+                .stream().map(this::mapToResponseDto).toList();
     }
 
     private PharmacyBranch mapToEntity(PharmacyBranchRequestDto dto) {

@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PharmacyBranchRepository extends JpaRepository<PharmacyBranch, Long> {
     boolean existsByNameAndPharmacyEntityId(String name, Long pharmacyId);
+    java.util.List<PharmacyBranch> findByPharmacyEntityId(Long pharmacyId);
 }
