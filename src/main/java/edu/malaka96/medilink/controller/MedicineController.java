@@ -1,6 +1,7 @@
 package edu.malaka96.medilink.controller;
 
 import edu.malaka96.medilink.exception.MedicineAlreadyExistsException;
+import edu.malaka96.medilink.exception.PharmacyBranchNotFoundException;
 import edu.malaka96.medilink.exception.PharmacyNotFoundForUserException;
 import edu.malaka96.medilink.exception.UnauthorizedBranchAccessException;
 import edu.malaka96.medilink.model.dto.MedicineRequestDto;
@@ -30,6 +31,11 @@ public class MedicineController {
     @ExceptionHandler(MedicineAlreadyExistsException.class)
     public ResponseEntity<String> handleMedicineAlreadyExists(MedicineAlreadyExistsException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(PharmacyBranchNotFoundException.class)
+    public ResponseEntity<String> handlePharmacyBranchNotFound(PharmacyBranchNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(UnauthorizedBranchAccessException.class)

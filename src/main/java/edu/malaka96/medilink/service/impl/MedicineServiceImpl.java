@@ -1,7 +1,7 @@
 package edu.malaka96.medilink.service.impl;
 
 import edu.malaka96.medilink.exception.MedicineAlreadyExistsException;
-import edu.malaka96.medilink.exception.PharmacyBranchAlreadyExistsException;
+import edu.malaka96.medilink.exception.PharmacyBranchNotFoundException;
 import edu.malaka96.medilink.exception.PharmacyNotFoundForUserException;
 import edu.malaka96.medilink.exception.UnauthorizedBranchAccessException;
 import edu.malaka96.medilink.model.dto.MedicineRequestDto;
@@ -48,7 +48,7 @@ public class MedicineServiceImpl implements MedicineService {
 
     private void validateBranchOwnership(Long branchId, String email) {
         PharmacyBranch branch = pharmacyBranchRepository.findById(branchId)
-                .orElseThrow(() -> new PharmacyBranchAlreadyExistsException("Branch with id " + branchId + " not found"));
+                .orElseThrow(() -> new PharmacyBranchNotFoundException("Branch with id " + branchId + " not found in the system"));
 
         pharmacyRepository.findByOwnerEmail(email)
                 .filter(pharmacy -> pharmacy.getId().equals(branch.getPharmacyEntity().getId()))
