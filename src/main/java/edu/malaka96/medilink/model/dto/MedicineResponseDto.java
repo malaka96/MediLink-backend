@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class MedicineResponseDto {
     private Long id;
+    private Long branchId;
     private String brandName;
     private String genericName;
     private String dosage;

@@ -1,10 +1,18 @@
 package edu.malaka96.medilink.service.impl;
 
 import edu.malaka96.medilink.exception.MedicineAlreadyExistsException;
+import edu.malaka96.medilink.exception.PharmacyBranchAlreadyExistsException;
+import edu.malaka96.medilink.exception.PharmacyNotFoundForUserException;
+import edu.malaka96.medilink.exception.UnauthorizedBranchAccessException;
 import edu.malaka96.medilink.model.dto.MedicineRequestDto;
 import edu.malaka96.medilink.model.dto.MedicineResponseDto;
+import edu.malaka96.medilink.model.entity.InventoryEntity;
 import edu.malaka96.medilink.model.entity.MedicineEntity;
+import edu.malaka96.medilink.model.entity.PharmacyBranch;
+import edu.malaka96.medilink.repository.InventoryRepository;
 import edu.malaka96.medilink.repository.MedicineRepository;
+import edu.malaka96.medilink.repository.PharmacyBranchRepository;
+import edu.malaka96.medilink.repository.PharmacyRepository;
 import edu.malaka96.medilink.service.MedicineService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,17 +22,37 @@ import org.springframework.stereotype.Service;
 public class MedicineServiceImpl implements MedicineService {
 
     private final MedicineRepository medicineRepository;
+    private final PharmacyBranchRepository pharmacyBranchRepository;
+    private final PharmacyRepository pharmacyRepository;
+    private final InventoryRepository inventoryRepository;
 
     @Override
-    public MedicineResponseDto createMedicine(MedicineRequestDto medicineRequestDto) {
-        if (medicineRepository.existsByBrandNameAndDosage(
-                medicineRequestDto.getBrandName(),
-                medicineRequestDto.getDosage())) {
-            throw new MedicineAlreadyExistsException("Medicine '"
-                    + medicineRequestDto.getBrandName() + "' with dosage '"
-                    + medicineRequestDto.getDosage() + "' already exists");
+    public MedicineResponseDto createMedicine(MedicineRequestDto dto, String email) {
+        validateBranchOwnership(dto.getBranchId(), email);
+
+        if (medicineRepository.existsByBrandNameAndDosage(dto.getBrandName(), dto.getDosage())) {
+            throw new MedicineAlreadyExistsException("Medicine '" + dto.getBrandName() + "' with dosage '" + dto.getDosage() + "' already exists");
         }
-        return mapToResponseDto(medicineRepository.save(mapToEntity(medicineRequestDto)));
+
+        MedicineEntity savedMedicine = medicineRepository.save(mapToEntity(dto));
+
+        PharmacyBranch branch = pharmacyBranchRepository.findById(dto.getBranchId()).get();
+        inventoryRepository.save(InventoryEntity.builder()
+                .medicine(savedMedicine)
+                .pharmacyBranch(branch)
+                .quantity(0)
+                .build());
+
+        return mapToResponseDto(savedMedicine, branch.getId());
+    }
+
+    private void validateBranchOwnership(Long branchId, String email) {
+        PharmacyBranch branch = pharmacyBranchRepository.findById(branchId)
+                .orElseThrow(() -> new PharmacyBranchAlreadyExistsException("Branch with id " + branchId + " not found"));
+
+        pharmacyRepository.findByOwnerEmail(email)
+                .filter(pharmacy -> pharmacy.getId().equals(branch.getPharmacyEntity().getId()))
+                .orElseThrow(() -> new UnauthorizedBranchAccessException("Branch does not belong to your pharmacy"));
     }
 
     private MedicineEntity mapToEntity(MedicineRequestDto dto) {
@@ -38,9 +66,10 @@ public class MedicineServiceImpl implements MedicineService {
                 .build();
     }
 
-    private MedicineResponseDto mapToResponseDto(MedicineEntity medicineEntity) {
+    private MedicineResponseDto mapToResponseDto(MedicineEntity medicineEntity, Long branchId) {
         MedicineResponseDto responseDto = new MedicineResponseDto();
         responseDto.setId(medicineEntity.getId());
+        responseDto.setBranchId(branchId);
         responseDto.setBrandName(medicineEntity.getBrandName());
         responseDto.setGenericName(medicineEntity.getGenericName());
         responseDto.setDosage(medicineEntity.getDosage());
