@@ -30,20 +30,21 @@ public class MedicineServiceImpl implements MedicineService {
     public MedicineResponseDto createMedicine(MedicineRequestDto dto, String email) {
         validateBranchOwnership(dto.getBranchId(), email);
 
-        if (medicineRepository.existsByBrandNameAndDosage(dto.getBrandName(), dto.getDosage())) {
-            throw new MedicineAlreadyExistsException("Medicine '" + dto.getBrandName() + "' with dosage '" + dto.getDosage() + "' already exists");
-        }
+        MedicineEntity medicine = medicineRepository.findByBrandNameAndDosage(dto.getBrandName(), dto.getDosage())
+                .orElseGet(() -> medicineRepository.save(mapToEntity(dto)));
 
-        MedicineEntity savedMedicine = medicineRepository.save(mapToEntity(dto));
+        if (inventoryRepository.existsByMedicineIdAndPharmacyBranchId(medicine.getId(), dto.getBranchId())) {
+            throw new MedicineAlreadyExistsException("Medicine '" + dto.getBrandName() + "' with dosage '" + dto.getDosage() + "' already exists in this branch");
+        }
 
         PharmacyBranch branch = pharmacyBranchRepository.findById(dto.getBranchId()).get();
         inventoryRepository.save(InventoryEntity.builder()
-                .medicine(savedMedicine)
+                .medicine(medicine)
                 .pharmacyBranch(branch)
                 .quantity(0)
                 .build());
 
-        return mapToResponseDto(savedMedicine, branch.getId());
+        return mapToResponseDto(medicine, branch.getId());
     }
 
     private void validateBranchOwnership(Long branchId, String email) {

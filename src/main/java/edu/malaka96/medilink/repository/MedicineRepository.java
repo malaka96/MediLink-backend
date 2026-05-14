@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MedicineRepository extends JpaRepository<MedicineEntity, Long> {
     boolean existsByBrandNameAndDosage(String brandName, String dosage);
+    java.util.Optional<MedicineEntity> findByBrandNameAndDosage(String brandName, String dosage);
 }
