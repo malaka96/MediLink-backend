@@ -14,6 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/medicines")
 @RequiredArgsConstructor
@@ -26,6 +28,11 @@ public class MedicineController {
                                                               @AuthenticationPrincipal UserDetails userDetails) {
         MedicineResponseDto createdMedicine = medicineService.createMedicine(medicineRequestDto, userDetails.getUsername());
         return new ResponseEntity<>(createdMedicine, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<MedicineResponseDto>> getMyPharmacyMedicines(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(medicineService.getMyPharmacyMedicines(userDetails.getUsername()));
     }
 
     @ExceptionHandler(MedicineAlreadyExistsException.class)

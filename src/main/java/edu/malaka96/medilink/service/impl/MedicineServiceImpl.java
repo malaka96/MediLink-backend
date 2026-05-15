@@ -17,6 +17,9 @@ import edu.malaka96.medilink.service.MedicineService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class MedicineServiceImpl implements MedicineService {
@@ -45,6 +48,18 @@ public class MedicineServiceImpl implements MedicineService {
                 .build());
 
         return mapToResponseDto(medicine, branch.getId());
+    }
+
+    @Override
+    public List<MedicineResponseDto> getMyPharmacyMedicines(String email) {
+        Long pharmacyId = pharmacyRepository.findByOwnerEmail(email)
+                .orElseThrow(() -> new PharmacyNotFoundForUserException("No pharmacy found for user '" + email + "'"))
+                .getId();
+
+        return inventoryRepository.findByPharmacyBranchPharmacyEntityId(pharmacyId)
+                .stream()
+                .map(inventory -> mapToResponseDto(inventory.getMedicine(), inventory.getPharmacyBranch().getId()))
+                .collect(Collectors.toList());
     }
 
     private void validateBranchOwnership(Long branchId, String email) {
