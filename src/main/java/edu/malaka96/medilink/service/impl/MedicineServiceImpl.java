@@ -62,6 +62,16 @@ public class MedicineServiceImpl implements MedicineService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<MedicineResponseDto> getMedicinesByBranch(Long branchId, String email) {
+        validateBranchOwnership(branchId, email);
+
+        return inventoryRepository.findByPharmacyBranchId(branchId)
+                .stream()
+                .map(inventory -> mapToResponseDto(inventory.getMedicine(), branchId))
+                .collect(Collectors.toList());
+    }
+
     private void validateBranchOwnership(Long branchId, String email) {
         PharmacyBranch branch = pharmacyBranchRepository.findById(branchId)
                 .orElseThrow(() -> new PharmacyBranchNotFoundException("Branch with id " + branchId + " not found in the system"));

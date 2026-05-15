@@ -8,4 +8,5 @@ import java.util.List;
 public interface MedicineService {
     MedicineResponseDto createMedicine(MedicineRequestDto medicineRequestDto, String email);
     List<MedicineResponseDto> getMyPharmacyMedicines(String email);
+    List<MedicineResponseDto> getMedicinesByBranch(Long branchId, String email);
 }

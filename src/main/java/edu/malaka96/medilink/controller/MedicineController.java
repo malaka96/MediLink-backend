@@ -35,6 +35,12 @@ public class MedicineController {
         return ResponseEntity.ok(medicineService.getMyPharmacyMedicines(userDetails.getUsername()));
     }
 
+    @GetMapping("/branch/{branchId}")
+    public ResponseEntity<List<MedicineResponseDto>> getMedicinesByBranch(@PathVariable Long branchId,
+                                                                          @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(medicineService.getMedicinesByBranch(branchId, userDetails.getUsername()));
+    }
+
     @ExceptionHandler(MedicineAlreadyExistsException.class)
     public ResponseEntity<String> handleMedicineAlreadyExists(MedicineAlreadyExistsException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);

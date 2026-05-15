@@ -8,4 +8,5 @@ import java.util.List;
 public interface InventoryRepository extends JpaRepository<InventoryEntity, Long> {
     boolean existsByMedicineIdAndPharmacyBranchId(Long medicineId, Long branchId);
     List<InventoryEntity> findByPharmacyBranchPharmacyEntityId(Long pharmacyId);
+    List<InventoryEntity> findByPharmacyBranchId(Long branchId);
 }
